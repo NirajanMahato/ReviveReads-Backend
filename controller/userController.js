@@ -102,4 +102,53 @@ const signIn = async (req, res) => {
   }
 };
 
-module.exports = { getAllUsers, signUp, signIn };
+//Get user's information
+const getUserInfo = async (req, res) => {
+  try {
+    const { id } = req.headers;
+    const data = await User.findById(id).select("-password");
+    return res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+const updateData = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, phone, address } = req.body;
+
+    const updateFields = {};
+    if (name) updateFields.name = name;
+    if (phone) updateFields.phone = phone;
+    if (address) updateFields.address = address;
+
+    const data = await User.findByIdAndUpdate(id, updateFields, { new: true });  // { new: true }: Returns the updated document.
+
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+const deleteById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await User.findByIdAndDelete(id);
+    if (data == null) {
+      res.status(404).json({ message: "User not found" });
+    }
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+module.exports = {
+  getAllUsers,
+  signUp,
+  signIn,
+  getUserInfo,
+  deleteById,
+  updateData,
+};
