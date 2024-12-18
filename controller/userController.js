@@ -115,17 +115,18 @@ const getUserInfo = async (req, res) => {
 
 const updateData = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.headers;
     const { name, phone, address } = req.body;
 
     const updateFields = {};
     if (name) updateFields.name = name;
     if (phone) updateFields.phone = phone;
     if (address) updateFields.address = address;
+    if (req.file) updateFields.avatar = req.file.originalname;
 
     const data = await User.findByIdAndUpdate(id, updateFields, { new: true });  // { new: true }: Returns the updated document.
 
-    res.status(200).json(data);
+    res.status(200).json({message: "User updated successfully", data});
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
   }

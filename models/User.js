@@ -7,10 +7,7 @@ const userSchema = mongoose.Schema(
     phone: { type: String },
     password: { type: String, required: true },
     address: { type: String },
-    avatar: {
-      type: String,
-      default: "https://cdn-icons-png.flaticon.com/128/3177/3177440.png",
-    },
+    avatar: { type: String },
     role: { type: String, default: "user", enum: ["user", "admin"] },
     book_listings: [{ type: mongoose.Schema.Types.ObjectId, ref: "Book" }],
     purchases: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }],
