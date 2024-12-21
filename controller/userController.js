@@ -64,7 +64,7 @@ const signUp = async (req, res) => {
 
     res.status(201).json({ message: "User saved successfully", data, info });
   } catch (error) {
-    res.status(500).json({ message: "Internal Server Error", details: error });
+    res.status(500).json({ message: "Internal Server Error", error });
   }
 };
 
