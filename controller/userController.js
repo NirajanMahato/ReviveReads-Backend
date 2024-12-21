@@ -64,7 +64,7 @@ const signUp = async (req, res) => {
 
     res.status(201).json({ message: "User saved successfully", data, info });
   } catch (error) {
-    res.status(500).json({ error: "Internal Server Error", details: error });
+    res.status(500).json({ message: "Internal Server Error", details: error });
   }
 };
 
@@ -75,7 +75,8 @@ const signIn = async (req, res) => {
 
     const existingUser = await User.findOne({ email });
     if (!existingUser) {
-      return res.status(400).json({ error: "Invalid Credentials" });
+      return res.status(400).json({ message: "Email wrong, tora mai k chodo" });
+      // return res.status(400).json({ message: "Invalid Credentials" });
     }
 
     const isMatch = await bcrypt.compare(password, existingUser.password);
@@ -95,7 +96,8 @@ const signIn = async (req, res) => {
         },
       });
     } else {
-      return res.status(400).json({ error: "Invalid Credentials" });
+      // return res.status(400).json({ message: "Invalid Credentials" });
+      return res.status(400).json({ message: "Password wrong, tora mai k chodo" });
     }
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error", details: error });
