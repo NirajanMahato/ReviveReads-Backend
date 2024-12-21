@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 
-const { getAllBooks, postBook } = require("../controller/bookController");
+const { getAllBooks, postBook, getBookById, deleteBookId, updateBook } = require("../controller/bookController");
 
 const { authenticateToken } = require("./userAuth");
 
@@ -18,6 +18,9 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 router.get("/get-all-books", getAllBooks);
-router.post("/post-book",upload.array('images'), authenticateToken, postBook);
+router.get("/get-book-by-id/:bookId", getBookById);
+router.post("/post-book", upload.array('images'), authenticateToken, postBook);
+router.delete("/delete-book/:bookId", authenticateToken, deleteBookId);
+router.patch("/update-book/:bookId", upload.array('images'), authenticateToken, updateBook);
 
 module.exports = router;
