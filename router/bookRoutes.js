@@ -1,14 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const {
-  getAllUsers,
-  signUp,
-  signIn,
-  getUserInfo,
-  deleteById,
-  updateData,
-} = require("../controller/userController");
+
+const { getAllBooks, postBook } = require("../controller/bookController");
+
 const { authenticateToken } = require("./userAuth");
 
 const storage = multer.diskStorage({
@@ -22,11 +17,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-router.post("/sign-up", signUp);
-router.post("/sign-in", signIn);
-router.get("/get-all-users", getAllUsers);
-router.get("/get-user-info", authenticateToken, getUserInfo);
-router.delete("/:id", deleteById);
-router.patch("/", upload.single("avatar"), authenticateToken, updateData);
+router.get("/get-all-books", getAllBooks);
+router.post("/post-book",upload.array('images'), authenticateToken, postBook);
 
 module.exports = router;

@@ -11,12 +11,29 @@ const getAllBooks = async (req, res) => {
 };
 
 // Post a book
-const saveBook = async (req, res) => {
+const postBook = async (req, res) => {
   try {
-    const book = new Book(req.body);
-    await book.save();
-    res.status(200).json({ message: "Book added successfully", book})
+    const { id } = req.headers;
+    const { title, genre, description, price, condition } = req.body;
+    // Handle multiple images
+    const images = req.files.map((file) => file.originalname); // Store the original file names
+    const book = new Book({
+      seller: id,
+      title,
+      genre,
+      description,
+      price,
+      condition,
+      images: images,
+    });
+    const data = await book.save();
+    res.status(200).json({ message: "Book posted successfully", data });
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error", error });
   }
+};
+
+module.exports = {
+  getAllBooks,
+  postBook,
 };

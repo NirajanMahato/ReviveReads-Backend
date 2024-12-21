@@ -7,14 +7,8 @@ const bookSchema = mongoose.Schema(
       required: true,
       trim: true,
     },
-    genre: {
-      type: String,
-      required: true,
-    },
-    description: {
-      type: String,
-      required: true,
-    },
+    genre: { type: String },
+    description: { type: String },
     price: {
       type: Number,
       required: true,
