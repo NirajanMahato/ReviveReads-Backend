@@ -14,7 +14,7 @@ const getAllBooks = async (req, res) => {
 const postBook = async (req, res) => {
   try {
     const { id } = req.headers;
-    const { title, genre, description, price, condition } = req.body;
+    const { title, genre, description, price, condition, delivery } = req.body;
     // Handle multiple images
     if (!req.files || req.files.length === 0) {
       return res
@@ -30,6 +30,7 @@ const postBook = async (req, res) => {
       description,
       price,
       condition,
+      delivery: delivery || false,
       images: images,
     });
     const data = await book.save();
@@ -70,7 +71,7 @@ const deleteBookId = async (req, res) => {
 const updateBook = async (req, res) => {
   try {
     const { bookId } = req.headers;
-    const { title, genre, description, price, condition } = req.body;
+    const { title, genre, description, price, condition, delivery } = req.body;
 
     const book = await Book.findById(bookId);
     if (!book) {
@@ -80,11 +81,12 @@ const updateBook = async (req, res) => {
     }
 
     const updateFields = {
-      title: title || book.title,
-      genre: genre || book.genre,
-      description: description || book.description,
-      price: price || book.price,
-      condition: condition || book.condition,
+      title,
+      genre,
+      description,
+      price,
+      condition,
+      delivery,
     };
 
     if (req.files && req.files.length > 0) {
