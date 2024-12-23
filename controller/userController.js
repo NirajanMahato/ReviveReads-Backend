@@ -75,8 +75,7 @@ const signIn = async (req, res) => {
 
     const existingUser = await User.findOne({ email });
     if (!existingUser) {
-      return res.status(400).json({ message: "Email wrong, tora mai k chodo" });
-      // return res.status(400).json({ message: "Invalid Credentials" });
+      return res.status(400).json({ message: "Invalid Credentials" });
     }
 
     const isMatch = await bcrypt.compare(password, existingUser.password);
@@ -84,7 +83,7 @@ const signIn = async (req, res) => {
       const token = jwt.sign(
         { email: existingUser.email, role: existingUser.role },
         process.env.JWT_SECRET,
-        { expiresIn: "30d" }
+        { expiresIn: "3d" }
       );
 
       return res.status(200).json({
@@ -96,8 +95,7 @@ const signIn = async (req, res) => {
         },
       });
     } else {
-      // return res.status(400).json({ message: "Invalid Credentials" });
-      return res.status(400).json({ message: "Password wrong, tora mai k chodo" });
+      return res.status(400).json({ message: "Invalid Credentials" });
     }
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error", details: error });
@@ -126,9 +124,9 @@ const updateData = async (req, res) => {
     if (address) updateFields.address = address;
     if (req.file) updateFields.avatar = req.file.originalname;
 
-    const data = await User.findByIdAndUpdate(id, updateFields, { new: true });  // { new: true }: Returns the updated document.
+    const data = await User.findByIdAndUpdate(id, updateFields, { new: true }); // { new: true }: Returns the updated document.
 
-    res.status(200).json({message: "User updated successfully", data});
+    res.status(200).json({ message: "User updated successfully", data });
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
   }

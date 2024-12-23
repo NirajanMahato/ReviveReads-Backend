@@ -1,4 +1,5 @@
 const Book = require("../models/Book");
+const User = require("../models/User");
 
 //Get all books
 const getAllBooks = async (req, res) => {
@@ -34,6 +35,11 @@ const postBook = async (req, res) => {
       images: images,
     });
     const data = await book.save();
+
+    // Add the book ID to the user's book_listings array
+    await User.findByIdAndUpdate(id, {
+      $push: { book_listings: data._id }, // Push the book ID into the user's book_listings array
+    });
     res.status(200).json({ message: "Book posted successfully", data });
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error", error });
