@@ -81,7 +81,7 @@ const signIn = async (req, res) => {
     const isMatch = await bcrypt.compare(password, existingUser.password);
     if (isMatch) {
       const token = jwt.sign(
-        { email: existingUser.email, role: existingUser.role },
+        { id: existingUser._id, email: existingUser.email, role: existingUser.role },
         process.env.JWT_SECRET,
         { expiresIn: "3d" }
       );

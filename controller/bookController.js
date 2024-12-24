@@ -14,7 +14,7 @@ const getAllBooks = async (req, res) => {
 // Post a book
 const postBook = async (req, res) => {
   try {
-    const { id } = req.headers;
+    const userId  = req.user.id;
     const { title, genre, description, price, condition, delivery } = req.body;
     // Handle multiple images
     if (!req.files || req.files.length === 0) {
@@ -25,7 +25,7 @@ const postBook = async (req, res) => {
     // Handle multiple images
     const images = req.files.map((file) => file.originalname); // Store the original file names
     const book = new Book({
-      seller: id,
+      seller: userId,
       title,
       genre,
       description,
@@ -37,7 +37,7 @@ const postBook = async (req, res) => {
     const data = await book.save();
 
     // Add the book ID to the user's book_listings array
-    await User.findByIdAndUpdate(id, {
+    await User.findByIdAndUpdate(userId, {
       $push: { book_listings: data._id }, // Push the book ID into the user's book_listings array
     });
     res.status(200).json({ message: "Book posted successfully", data });
@@ -57,21 +57,39 @@ const getBookById = async (req, res) => {
   }
 };
 
-// Delete a book
-const deleteBookId = async (req, res) => {
+// Get books posted by a specific user
+const getBookByUser = async (req, res) => {
   try {
-    const { bookId } = req.params;
+    const { id } = req.headers;
+    const books = await Book.find({ seller: id });
+    res.send(books);
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
-    const book = await Book.findByIdAndDelete(bookId);
+// Delete a book
+const deleteBookById = async (req, res) => {
+  try {
+    const { bookid } = req.headers;
+    const userId = req.user.id;
+    
+    const book = await Book.findByIdAndDelete(bookid);
     if (!book) {
       return res.status(404).json({ message: "Book not found" });
     }
+
+    await User.findByIdAndUpdate(userId, {
+      $pull: { book_listings: bookid }, // Remove the book ID
+    });
+
     return res.status(200).json({ message: "Book deleted successfully!" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 //Update book
 const updateBook = async (req, res) => {
@@ -118,6 +136,7 @@ module.exports = {
   getAllBooks,
   postBook,
   getBookById,
-  deleteBookId,
+  getBookByUser,
+  deleteBookById,
   updateBook,
 };
