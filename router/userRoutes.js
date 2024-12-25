@@ -5,9 +5,12 @@ const {
   getAllUsers,
   signUp,
   signIn,
-  getUserInfo,
   deleteById,
   updateData,
+  getUserById,
+  addBookToFavorites,
+  getFavouriteBook,
+  removeBookFromFavorites,
 } = require("../controller/userController");
 const { authenticateToken } = require("./userAuth");
 
@@ -25,8 +28,11 @@ const upload = multer({ storage });
 router.post("/sign-up", signUp);
 router.post("/sign-in", signIn);
 router.get("/get-all-users", getAllUsers);
-router.get("/get-user-info", authenticateToken, getUserInfo);
+router.get("/get-user-by-id", getUserById);
 router.delete("/:id", deleteById);
+router.post("/add-to-favorites", authenticateToken, addBookToFavorites);
+router.delete("/remove-from-favorites/:bookId", authenticateToken, removeBookFromFavorites);
+router.get("/get-favorites-books", authenticateToken, getFavouriteBook);
 router.patch("/", upload.single("avatar"), authenticateToken, updateData);
 
 module.exports = router;

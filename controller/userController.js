@@ -81,7 +81,11 @@ const signIn = async (req, res) => {
     const isMatch = await bcrypt.compare(password, existingUser.password);
     if (isMatch) {
       const token = jwt.sign(
-        { id: existingUser._id, email: existingUser.email, role: existingUser.role },
+        {
+          id: existingUser._id,
+          email: existingUser.email,
+          role: existingUser.role,
+        },
         process.env.JWT_SECRET,
         { expiresIn: "3d" }
       );
@@ -103,7 +107,7 @@ const signIn = async (req, res) => {
 };
 
 //Get user's information
-const getUserInfo = async (req, res) => {
+const getUserById = async (req, res) => {
   try {
     const { id } = req.headers;
     const data = await User.findById(id).select("-password");
@@ -145,11 +149,69 @@ const deleteById = async (req, res) => {
   }
 };
 
+const addBookToFavorites = async (req, res) => {
+  try {
+    const { bookId } = req.body;
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!user.favorites.includes(bookId)) {
+      user.favorites.push(bookId);
+      await user.save();
+      return res.status(200).json({ message: "Book added to favorites", user });
+    } else {
+      return res.status(400).json({ message: "Book already in favorites" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error", error });
+  }
+};
+
+const removeBookFromFavorites = async (req, res) => {
+  try {
+    const { bookId } = req.params;
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+    
+    if (user.favorites.includes(bookId)) {
+      user.favorites = user.favorites.filter((id) => id.toString() !== bookId); // Remove book
+      await user.save();
+      return res.status(200).json({ message: "Book removed from favorites", user });
+    } else {
+      return res.status(400).json({ message: "Book not found in favorites" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error", error });
+  }
+};
+
+
+const getFavouriteBook = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).populate("favorites");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(user.favorites);
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error", error });
+  }
+};
+
 module.exports = {
   getAllUsers,
   signUp,
   signIn,
-  getUserInfo,
+  getUserById,
   deleteById,
   updateData,
+  addBookToFavorites,
+  removeBookFromFavorites,
+  getFavouriteBook,
 };
