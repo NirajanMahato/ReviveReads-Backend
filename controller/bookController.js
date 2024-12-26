@@ -4,8 +4,8 @@ const User = require("../models/User");
 //Get all books
 const getAllBooks = async (req, res) => {
   try {
-    const books = await Book.find();
-    res.send(books);
+    const books = await Book.find().populate("seller", "name email address");
+    res.status(200).send(books);
   } catch (error) {
     res.status(404).json({ message: "Books not found" }, error);
   }
@@ -51,7 +51,7 @@ const getBookById = async (req, res) => {
   try {
     const { bookId } = req.params;
     const book = await Book.findById(bookId);
-    res.send(book);
+    res.status(200).send(book);
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
   }
@@ -62,7 +62,7 @@ const getBookByUser = async (req, res) => {
   try {
     const { id } = req.headers;
     const books = await Book.find({ seller: id });
-    res.send(books);
+    res.status(200).send(books);
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
   }
