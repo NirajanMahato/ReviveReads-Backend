@@ -27,7 +27,7 @@ const upload = multer({ storage });
 
 router.post("/sign-up", signUp);
 router.post("/sign-in", signIn);
-router.get("/get-all-users", getAllUsers);
+router.get("/get-all-users", authenticateToken, getAllUsers);
 router.get("/get-user-by-id", getUserById);
 router.delete("/:id", deleteById);
 router.post("/add-to-favorites", authenticateToken, addBookToFavorites);
