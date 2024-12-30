@@ -177,11 +177,13 @@ const removeBookFromFavorites = async (req, res) => {
     const userId = req.user.id;
 
     const user = await User.findById(userId);
-    
+
     if (user.favorites.includes(bookId)) {
       user.favorites = user.favorites.filter((id) => id.toString() !== bookId); // Remove book
       await user.save();
-      return res.status(200).json({ message: "Book removed from favorites", user });
+      return res
+        .status(200)
+        .json({ message: "Book removed from favorites", user });
     } else {
       return res.status(400).json({ message: "Book not found in favorites" });
     }
@@ -189,7 +191,6 @@ const removeBookFromFavorites = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error", error });
   }
 };
-
 
 const getFavouriteBook = async (req, res) => {
   try {
@@ -204,6 +205,22 @@ const getFavouriteBook = async (req, res) => {
   }
 };
 
+//
+const getUsersForSidebar = async (req, res) => {
+  try {
+    const loggedInUserId = req.user.id;
+    const filterdUsers = await User.find({
+      _id: { $ne: loggedInUserId },
+      role: { $ne: "admin" },
+    }).select("-password");
+
+    res.status(200).json(filterdUsers);
+  } catch (error) {
+    console.error("Error in getUsersForSidebar: ", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   getAllUsers,
   signUp,
@@ -214,4 +231,5 @@ module.exports = {
   addBookToFavorites,
   removeBookFromFavorites,
   getFavouriteBook,
+  getUsersForSidebar,
 };
