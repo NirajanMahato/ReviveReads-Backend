@@ -50,7 +50,7 @@ const postBook = async (req, res) => {
 const getBookById = async (req, res) => {
   try {
     const { bookId } = req.params;
-    const book = await Book.findById(bookId);
+    const book = await Book.findById(bookId).populate("seller", "name email address avatar createdAt");
     res.status(200).send(book);
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
