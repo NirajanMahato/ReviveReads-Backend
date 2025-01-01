@@ -44,6 +44,15 @@ const bookSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    status: {
+      type: String,
+      enum: ["Pending", "Approved", "Declined"],
+      default: "Pending", // By default, the book will be pending approval
+    },
+    approvalDate: {             // Optionally, you can track when declined
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );

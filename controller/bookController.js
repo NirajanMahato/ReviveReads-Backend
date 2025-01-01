@@ -11,10 +11,21 @@ const getAllBooks = async (req, res) => {
   }
 };
 
+// Get all approved books only
+const getApprovedBooks = async (req, res) => {
+  try {
+    const books = await Book.find({ status: "Approved" })
+      .populate("seller", "name email address");
+    res.status(200).send(books);
+  } catch (error) {
+    res.status(404).json({ message: "Books not found", error });
+  }
+};
+
 // Post a book
 const postBook = async (req, res) => {
   try {
-    const userId  = req.user.id;
+    const userId = req.user.id;
     const { title, genre, description, price, condition, delivery } = req.body;
     // Handle multiple images
     if (!req.files || req.files.length === 0) {
@@ -46,11 +57,36 @@ const postBook = async (req, res) => {
   }
 };
 
+// Approve or Decline a Book
+const updateBookApprovalStatus = async (req, res) => {
+  try {
+    const { bookId } = req.params;
+    const { status } = req.body;
+
+    const book = await Book.findById(bookId);
+    if (!book) {
+      return res.status(404).json({ message: "Book not found!" });
+    }
+
+    book.status = status;
+    book.approvalDate = new Date();
+    await book.save();
+
+    res.status(200).json({message: `Book ${status.toLowerCase()} successfully!`, data: book,});
+  } catch (error) {
+    console.error("Error updating approval status:", error);
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
+  }
+};
+
 // Get a book by id
 const getBookById = async (req, res) => {
   try {
     const { bookId } = req.params;
-    const book = await Book.findById(bookId).populate("seller", "name email address avatar createdAt");
+    const book = await Book.findById(bookId).populate(
+      "seller",
+      "name email address avatar createdAt"
+    );
     res.status(200).send(book);
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
@@ -68,12 +104,23 @@ const getBookByUser = async (req, res) => {
   }
 };
 
+// Get Approved books posted by a specific user
+const getApprovedBookByUser = async (req, res) => {
+  try {
+    const { id } = req.headers;
+    const books = await Book.find({ seller: id, status: "Approved" });
+    res.status(200).send(books);
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 // Delete a book
 const deleteBookById = async (req, res) => {
   try {
     const { bookid } = req.headers;
     const userId = req.user.id;
-    
+
     const book = await Book.findByIdAndDelete(bookid);
     if (!book) {
       return res.status(404).json({ message: "Book not found" });
@@ -89,7 +136,6 @@ const deleteBookById = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-
 
 //Update book
 const updateBook = async (req, res) => {
@@ -134,9 +180,12 @@ const updateBook = async (req, res) => {
 
 module.exports = {
   getAllBooks,
+  getApprovedBooks,
   postBook,
+  updateBookApprovalStatus,
   getBookById,
   getBookByUser,
+  getApprovedBookByUser,
   deleteBookById,
   updateBook,
 };
