@@ -4,7 +4,7 @@ const User = require("../models/User");
 //Get all books
 const getAllBooks = async (req, res) => {
   try {
-    const books = await Book.find().populate("seller", "name email address");
+    const books = await Book.find().populate("seller", "name email address avatar createdAt");
     res.status(200).send(books);
   } catch (error) {
     res.status(404).json({ message: "Books not found" }, error);
@@ -72,7 +72,7 @@ const updateBookApprovalStatus = async (req, res) => {
     book.approvalDate = new Date();
     await book.save();
 
-    res.status(200).json({message: `Book ${status.toLowerCase()} successfully!`, data: book,});
+    res.status(200).json({message: `Book ${status} successfully!`, data: book,});
   } catch (error) {
     console.error("Error updating approval status:", error);
     res.status(500).json({ message: "Internal Server Error", error: error.message });
