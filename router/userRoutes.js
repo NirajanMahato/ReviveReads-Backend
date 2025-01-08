@@ -12,8 +12,9 @@ const {
   getFavouriteBook,
   removeBookFromFavorites,
   getUsersForSidebar,
+  updateUserStatus,
 } = require("../controller/userController");
-const { authenticateToken } = require("./userAuth");
+const { authenticateToken } = require("../middleware/userAuth");
 
 const storage = multer.diskStorage({
   destination: function (req, res, cb) {
@@ -29,12 +30,13 @@ const upload = multer({ storage });
 router.post("/sign-up", signUp);
 router.post("/sign-in", signIn);
 router.get("/get-all-users", authenticateToken, getAllUsers);
-router.get("/get-user-by-id", getUserById);
+router.get("/get-user-by-id/:id", getUserById);
 router.delete("/:id", deleteById);
 router.post("/add-to-favorites", authenticateToken, addBookToFavorites);
 router.delete("/remove-from-favorites/:bookId", authenticateToken, removeBookFromFavorites);
 router.get("/get-favorites-books", authenticateToken, getFavouriteBook);
 router.get("/get-users-for-sidebar", authenticateToken, getUsersForSidebar);
+// router.patch("/:id/status", updateUserStatus);
 router.patch("/", upload.single("avatar"), authenticateToken, updateData);
 
 module.exports = router;

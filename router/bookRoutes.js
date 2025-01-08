@@ -4,7 +4,7 @@ const multer = require("multer");
 
 const { getAllBooks, postBook, getBookById, updateBook, getBookByUser, deleteBookById, updateBookApprovalStatus, getApprovedBooks, getApprovedBookByUser } = require("../controller/bookController");
 
-const { authenticateToken } = require("./userAuth");
+const { authenticateToken } = require("../middleware/userAuth");
 const { verifyAdmin } = require("../middleware/authMiddleware");
 
 const storage = multer.diskStorage({

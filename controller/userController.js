@@ -2,6 +2,7 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+const Conversation = require("../models/Conversation");
 
 //Get all users information
 const getAllUsers = async (req, res) => {
@@ -109,7 +110,7 @@ const signIn = async (req, res) => {
 //Get user's information
 const getUserById = async (req, res) => {
   try {
-    const { id } = req.headers;
+    const { id } = req.params;
     const data = await User.findById(id).select("-password");
     return res.status(200).json(data);
   } catch (error) {
@@ -208,16 +209,51 @@ const getFavouriteBook = async (req, res) => {
 //
 const getUsersForSidebar = async (req, res) => {
   try {
-    const loggedInUserId = req.user.id;
-    const filterdUsers = await User.find({
-      _id: { $ne: loggedInUserId },
-      role: { $ne: "admin" },
-    }).select("-password");
+    const loggedInUserId = req.user.id; // Current logged-in user ID
 
-    res.status(200).json(filterdUsers);
+    // Find conversations where the current user is a participant
+    const conversations = await Conversation.find({
+      participants: loggedInUserId,
+    }).populate("participants", "-password"); // Populate user details excluding password
+
+    // Extract unique users from the conversations
+    const users = [];
+    conversations.forEach((conversation) => {
+      conversation.participants.forEach((participant) => {
+        // Add only other participants (exclude the logged-in user)
+        if (
+          participant._id.toString() !== loggedInUserId && // Exclude self
+          !users.some((user) => user._id.toString() === participant._id.toString()) // Avoid duplicates
+        ) {
+          users.push(participant);
+        }
+      });
+    });
+
+    res.status(200).json(users); // Send filtered users
   } catch (error) {
     console.error("Error in getUsersForSidebar: ", error.message);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+// PATCH: Update User Status
+const updateUserStatus = async (req, res) => {
+  const { id } = req.params;
+  const { status, lastActivity } = req.body;
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      id,
+      { status, lastActivity },
+      { new: true }
+    );
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
   }
 };
 
@@ -232,4 +268,5 @@ module.exports = {
   removeBookFromFavorites,
   getFavouriteBook,
   getUsersForSidebar,
+  updateUserStatus,
 };

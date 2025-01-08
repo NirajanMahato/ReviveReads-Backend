@@ -13,6 +13,8 @@ const userSchema = mongoose.Schema(
     purchases: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }],
     favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Book" }],
     notifications: { type: Boolean, default: true },
+    status: {type: String,enum: ["Active", "Away", "Offline"],default: "Away",},
+    lastActivity: {type: Date,default: Date.now,},
   },
   { timestamps: true }
 );
