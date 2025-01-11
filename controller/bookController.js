@@ -178,6 +178,30 @@ const updateBook = async (req, res) => {
   }
 };
 
+// Mark as sold
+const markAsSold = async (req, res) => {
+  const { bookId } = req.params;
+  const sellerId = req.user.id;
+
+  try {
+    const book = await Book.findOne({ _id: bookId, seller: sellerId });
+
+    if (!book) {
+      return res.status(404).json({ message: "Book not found or not owned by you." });
+    }
+
+    if (book.sold) {
+      return res.status(400).json({ message: "Book is already marked as sold." });
+    }
+    book.sold = true;
+    await book.save();
+
+    res.status(200).json({ message: "Book marked as sold successfully!", book });
+  } catch (error) {
+    res.status(500).json({ message: "Error marking book as sold.", error });
+  }
+}
+
 module.exports = {
   getAllBooks,
   getApprovedBooks,
@@ -188,4 +212,5 @@ module.exports = {
   getApprovedBookByUser,
   deleteBookById,
   updateBook,
+  markAsSold,
 };

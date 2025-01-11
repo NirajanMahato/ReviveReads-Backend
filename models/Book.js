@@ -49,10 +49,12 @@ const bookSchema = mongoose.Schema(
       enum: ["Pending", "Approved", "Declined"],
       default: "Pending", // By default, the book will be pending approval
     },
-    approvalDate: {             // Optionally, you can track when declined
+    approvalDate: {
+      // Optionally, you can track when declined
       type: Date,
       default: null,
     },
+    sold: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
