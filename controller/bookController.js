@@ -1,10 +1,15 @@
 const Book = require("../models/Book");
 const User = require("../models/User");
+const { createNotification } = require("./notificationController");
+const { getReceiverSocketId, io } = require("../socket/socket");
 
 //Get all books
 const getAllBooks = async (req, res) => {
   try {
-    const books = await Book.find().populate("seller", "name email address avatar createdAt");
+    const books = await Book.find().populate(
+      "seller",
+      "name email address avatar createdAt"
+    );
     res.status(200).send(books);
   } catch (error) {
     res.status(404).json({ message: "Books not found" }, error);
@@ -14,8 +19,10 @@ const getAllBooks = async (req, res) => {
 // Get all approved books only
 const getApprovedBooks = async (req, res) => {
   try {
-    const books = await Book.find({ status: "Approved" })
-      .populate("seller", "name email address");
+    const books = await Book.find({ status: "Approved" }).populate(
+      "seller",
+      "name email address"
+    );
     res.status(200).send(books);
   } catch (error) {
     res.status(404).json({ message: "Books not found", error });
@@ -72,10 +79,31 @@ const updateBookApprovalStatus = async (req, res) => {
     book.approvalDate = new Date();
     await book.save();
 
-    res.status(200).json({message: `Book ${status} successfully!`, data: book,});
+    // Create notification
+    const message = `Your book "${
+      book.title
+    }" has been ${status.toLowerCase()} by the admin.`;
+    const notification = await createNotification(
+      book.seller._id,
+      "Book Approval",
+      message
+    );
+
+    // Emit real-time notification
+    const receiverSocketId = getReceiverSocketId(book.seller._id);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newNotification", notification);
+    }
+
+    res.status(200).json({
+      message: `Book ${status.toLowerCase()} successfully!`,
+      data: book,
+    });
   } catch (error) {
     console.error("Error updating approval status:", error);
-    res.status(500).json({ message: "Internal Server Error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal Server Error", error: error.message });
   }
 };
 
@@ -187,20 +215,26 @@ const markAsSold = async (req, res) => {
     const book = await Book.findOne({ _id: bookId, seller: sellerId });
 
     if (!book) {
-      return res.status(404).json({ message: "Book not found or not owned by you." });
+      return res
+        .status(404)
+        .json({ message: "Book not found or not owned by you." });
     }
 
     if (book.sold) {
-      return res.status(400).json({ message: "Book is already marked as sold." });
+      return res
+        .status(400)
+        .json({ message: "Book is already marked as sold." });
     }
     book.sold = true;
     await book.save();
 
-    res.status(200).json({ message: "Book marked as sold successfully!", book });
+    res
+      .status(200)
+      .json({ message: "Book marked as sold successfully!", book });
   } catch (error) {
     res.status(500).json({ message: "Error marking book as sold.", error });
   }
-}
+};
 
 module.exports = {
   getAllBooks,
