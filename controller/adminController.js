@@ -34,4 +34,42 @@ const adminSummary = async (req, res) => {
   }
 };
 
-module.exports = { adminSummary };
+const getUserActivityStats = async (req, res) => {
+  try {
+    const stats = await User.aggregate([
+      {
+        $group: {
+          _id: { $week: "$lastActivity" }, // Group by week
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } }, // Sort by week
+    ]);
+
+    res.status(200).json(stats);
+  } catch (error) {
+    console.error("Error fetching user activity stats:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const bookListingsStats = async (req, res) => {
+  try {
+    const stats = await Book.aggregate([
+      {
+        $group: {
+          _id: { $week: "$createdAt" }, // Group by week
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } }, // Sort by week
+    ]);
+
+    res.status(200).json(stats);
+  } catch (error) {
+    console.error("Error fetching book listings stats:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports = { adminSummary, getUserActivityStats, bookListingsStats };

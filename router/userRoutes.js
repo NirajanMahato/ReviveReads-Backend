@@ -36,7 +36,7 @@ router.post("/add-to-favorites", authenticateToken, addBookToFavorites);
 router.delete("/remove-from-favorites/:bookId", authenticateToken, removeBookFromFavorites);
 router.get("/get-favorites-books", authenticateToken, getFavouriteBook);
 router.get("/get-users-for-sidebar", authenticateToken, getUsersForSidebar);
-// router.patch("/:id/status", updateUserStatus);
+router.patch("/:id/status", updateUserStatus);
 router.patch("/", upload.single("avatar"), authenticateToken, updateData);
 
 module.exports = router;
