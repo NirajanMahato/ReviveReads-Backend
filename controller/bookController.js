@@ -19,7 +19,7 @@ const getAllBooks = async (req, res) => {
 // Get all approved books only
 const getApprovedBooks = async (req, res) => {
   try {
-    const books = await Book.find({ status: "Approved" }).populate(
+    const books = await Book.find({ status: "Approved", sold: false }).populate(
       "seller",
       "name email address"
     );
@@ -125,7 +125,7 @@ const getBookById = async (req, res) => {
 const getBookByUser = async (req, res) => {
   try {
     const { id } = req.headers;
-    const books = await Book.find({ seller: id });
+    const books = await Book.find({ seller: id,sold:false });
     res.status(200).send(books);
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
@@ -236,6 +236,21 @@ const markAsSold = async (req, res) => {
   }
 };
 
+const getSoldBook = async (req, res) => {
+  try {
+    const sellerId = req.user.id;
+
+    const soldBooks = await Book.find({ seller: sellerId, sold: true });
+
+    res.status(200).json(soldBooks);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Server error. Could not fetch sold books." });
+  }
+};
+
 module.exports = {
   getAllBooks,
   getApprovedBooks,
@@ -247,4 +262,5 @@ module.exports = {
   deleteBookById,
   updateBook,
   markAsSold,
+  getSoldBook,
 };

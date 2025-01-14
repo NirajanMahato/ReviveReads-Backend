@@ -13,6 +13,7 @@ const {
   getApprovedBooks,
   getApprovedBookByUser,
   markAsSold,
+  getSoldBook,
 } = require("../controller/bookController");
 
 const { authenticateToken } = require("../middleware/userAuth");
@@ -44,5 +45,6 @@ router.patch(
 );
 router.patch("/approve-book/:bookId", verifyAdmin, updateBookApprovalStatus);
 router.patch("/mark-as-sold/:bookId", authenticateToken, markAsSold);
+router.get("/sold", authenticateToken, getSoldBook);
 
 module.exports = router;
