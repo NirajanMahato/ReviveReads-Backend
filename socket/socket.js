@@ -12,27 +12,49 @@ const io = new Server(server, {
   },
 });
 
+const userSocketMap = {}; // {userId: socketId}
+
 const getReceiverSocketId = (receiverId) => {
   return userSocketMap[receiverId];
 };
 
-const userSocketMap = {}; // {userId: socketId}
+const emitNotification = (userId, notification) => {
+  const socketId = userSocketMap[userId];
+  if (socketId) {
+    io.to(socketId).emit("newNotification", notification);
+  }
+};
 
 io.on("connection", (socket) => {
   // console.log("a user connected", socket.id);
 
   const userId = socket.handshake.query.userId;
-  if (userId != "undefined") userSocketMap[userId] = socket.id;
+  if (userId != "undefined") {
+    userSocketMap[userId] = socket.id;
+    
+    // Emit online users on new connection
+    io.emit("getOnlineUsers", Object.keys(userSocketMap));
+  }
 
-  // io.emit() is used to send events to all the connected clients
-  io.emit("getOnlineUsers", Object.keys(userSocketMap));
-
-  // socket.on() is used to listen to the events. can be used both on client and server side
+  // Handle disconnection
   socket.on("disconnect", () => {
     // console.log("user disconnected", socket.id);
-    delete userSocketMap[userId];
-    io.emit("getOnlineUsers", Object.keys(userSocketMap));
+    if (userId != "undefined") {
+      delete userSocketMap[userId];
+      io.emit("getOnlineUsers", Object.keys(userSocketMap));
+    }
+  });
+
+  // Listen for new notifications subscription
+  socket.on("subscribeToNotifications", (userId) => {
+    socket.join(`notifications:${userId}`);
+  });
+
+  // Listen for notification acknowledgment
+  socket.on("notificationRead", (notificationId) => {
+    // You can handle notification read status here if needed
+    console.log("Notification read:", notificationId);
   });
 });
 
-module.exports = { app, server, io, getReceiverSocketId };
+module.exports = { app, server, io, getReceiverSocketId, emitNotification };

@@ -15,6 +15,8 @@ const conversationSchema = mongoose.Schema(
         default: [],
       },
     ],
+    lastMessage: { type: mongoose.Schema.Types.ObjectId, ref: "Message" },
+    hasUnread: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

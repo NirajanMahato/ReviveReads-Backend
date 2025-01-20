@@ -70,7 +70,9 @@ const updateBookApprovalStatus = async (req, res) => {
     const { bookId } = req.params;
     const { status } = req.body;
 
-    const book = await Book.findById(bookId);
+    // Populate the seller field
+    const book = await Book.findById(bookId).populate("seller");
+
     if (!book) {
       return res.status(404).json({ message: "Book not found!" });
     }
@@ -79,20 +81,23 @@ const updateBookApprovalStatus = async (req, res) => {
     book.approvalDate = new Date();
     await book.save();
 
-    // Create notification
+    // Create notification with the correct seller ID
     const message = `Your book "${
       book.title
     }" has been ${status.toLowerCase()} by the admin.`;
     const notification = await createNotification(
-      book.seller._id,
-      "Book Approval",
+      book.seller._id.toString(), // Convert ObjectId to string
+      "BOOK_APPROVAL",
       message
     );
 
-    // Emit real-time notification
-    const receiverSocketId = getReceiverSocketId(book.seller._id);
+    // Send real-time notification
+    const receiverSocketId = getReceiverSocketId(book.seller._id.toString());
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("newNotification", notification);
+      io.to(receiverSocketId).emit("newNotification", {
+        ...notification.toObject(),
+        createdAt: new Date(),
+      });
     }
 
     res.status(200).json({
@@ -101,9 +106,10 @@ const updateBookApprovalStatus = async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating approval status:", error);
-    res
-      .status(500)
-      .json({ message: "Internal Server Error", error: error.message });
+    res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
   }
 };
 
@@ -125,7 +131,7 @@ const getBookById = async (req, res) => {
 const getBookByUser = async (req, res) => {
   try {
     const { id } = req.headers;
-    const books = await Book.find({ seller: id,sold:false });
+    const books = await Book.find({ seller: id, sold: false });
     res.status(200).send(books);
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
