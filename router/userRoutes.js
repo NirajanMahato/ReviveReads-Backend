@@ -13,6 +13,8 @@ const {
   removeBookFromFavorites,
   getUsersForSidebar,
   updateUserStatus,
+  forgotPassword,
+  resetPassword,
 } = require("../controller/userController");
 const { authenticateToken } = require("../middleware/userAuth");
 
@@ -32,11 +34,15 @@ router.post("/sign-in", signIn);
 router.get("/get-all-users", authenticateToken, getAllUsers);
 router.get("/get-user-by-id/:id", getUserById);
 router.delete("/:id", deleteById);
+router.get("/get-users-for-sidebar", authenticateToken, getUsersForSidebar);
+router.patch("/:id/status", updateUserStatus);
+
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
+
 router.post("/add-to-favorites", authenticateToken, addBookToFavorites);
 router.delete("/remove-from-favorites/:bookId", authenticateToken, removeBookFromFavorites);
 router.get("/get-favorites-books", authenticateToken, getFavouriteBook);
-router.get("/get-users-for-sidebar", authenticateToken, getUsersForSidebar);
-router.patch("/:id/status", updateUserStatus);
 router.patch("/", upload.single("avatar"), authenticateToken, updateData);
 
 module.exports = router;

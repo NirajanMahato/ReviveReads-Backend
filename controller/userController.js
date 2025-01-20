@@ -48,8 +48,8 @@ const signUp = async (req, res) => {
       port: 587,
       secure: false,
       auth: {
-        user: "nirajanmahato44@gmail.com",
-        pass: "eyrnqzsnphxlkyhq",
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 
@@ -150,6 +150,108 @@ const deleteById = async (req, res) => {
   }
 };
 
+//Forget and reset password
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "User with this email does not exist" });
+    }
+
+    // Generate reset token
+    const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "15m",
+    });
+
+    // Save reset token to user
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15 minutes
+    await user.save();
+
+    // Send email
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Password Reset Request",
+      html: `
+        <h1>You requested a password reset</h1>
+        <p>Click this link to reset your password:</p>
+        <a href="${resetUrl}" clicktracking=off>${resetUrl}</a>
+        <p>This link will expire in 15 minutes.</p>
+        <p>If you didn't request this, please ignore this email.</p>
+      `,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset link sent to email",
+    });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error sending reset email",
+    });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findOne({
+      _id: decoded.id,
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired reset token",
+      });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password and clear reset token
+    user.password = hashedPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset successful",
+    });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error resetting password",
+    });
+  }
+};
+
 const addBookToFavorites = async (req, res) => {
   try {
     const { bookId } = req.body;
@@ -223,7 +325,9 @@ const getUsersForSidebar = async (req, res) => {
         // Add only other participants (exclude the logged-in user)
         if (
           participant._id.toString() !== loggedInUserId && // Exclude self
-          !users.some((user) => user._id.toString() === participant._id.toString()) // Avoid duplicates
+          !users.some(
+            (user) => user._id.toString() === participant._id.toString()
+          ) // Avoid duplicates
         ) {
           users.push(participant);
         }
@@ -264,6 +368,8 @@ module.exports = {
   getUserById,
   deleteById,
   updateData,
+  forgotPassword,
+  resetPassword,
   addBookToFavorites,
   removeBookFromFavorites,
   getFavouriteBook,
