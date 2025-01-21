@@ -6,7 +6,7 @@ const { getReceiverSocketId, io } = require("../socket/socket");
 //Get all books
 const getAllBooks = async (req, res) => {
   try {
-    const books = await Book.find().populate(
+    const books = await Book.find({ sold: false }).populate(
       "seller",
       "name email address avatar createdAt"
     );
@@ -174,7 +174,7 @@ const deleteBookById = async (req, res) => {
 //Update book
 const updateBook = async (req, res) => {
   try {
-    const { bookId } = req.headers;
+    const { bookId } = req.params;
     const { title, genre, description, price, condition, delivery } = req.body;
 
     const book = await Book.findById(bookId);
@@ -191,6 +191,7 @@ const updateBook = async (req, res) => {
       price,
       condition,
       delivery,
+      status: "Pending",
     };
 
     if (req.files && req.files.length > 0) {
