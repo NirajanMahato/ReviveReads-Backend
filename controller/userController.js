@@ -127,7 +127,7 @@ const updateData = async (req, res) => {
     if (name) updateFields.name = name;
     if (phone) updateFields.phone = phone;
     if (address) updateFields.address = address;
-    if (req.file) updateFields.avatar = req.file.originalname;
+    if (req.file) updateFields.avatar = req.file.filename;
 
     const data = await User.findByIdAndUpdate(id, updateFields, { new: true }); // { new: true }: Returns the updated document.
 

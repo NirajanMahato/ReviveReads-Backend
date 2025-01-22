@@ -41,7 +41,7 @@ const postBook = async (req, res) => {
         .json({ success: false, message: "At least one image is required!" });
     }
     // Handle multiple images
-    const images = req.files.map((file) => file.originalname); // Store the original file names
+    const images = req.files.map((file) => file.filename); // Store the original file names
     const book = new Book({
       seller: userId,
       title,
@@ -195,7 +195,7 @@ const updateBook = async (req, res) => {
     };
 
     if (req.files && req.files.length > 0) {
-      const newImages = req.files.map((file) => file.originalname);
+      const newImages = req.files.map((file) => file.filename);
       updateFields.images = [...book.images, ...newImages];
     }
 

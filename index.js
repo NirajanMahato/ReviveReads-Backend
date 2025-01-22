@@ -22,7 +22,10 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/product_images", express.static("product_images"));
-app.use("/api/uploads", express.static("uploads"));
+
+// server.js
+app.use("/api/uploads/users", express.static("uploads/users"));
+app.use("/api/uploads/books", express.static("uploads/books"));
 
 server.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);

@@ -17,6 +17,7 @@ const {
   resetPassword,
 } = require("../controller/userController");
 const { authenticateToken } = require("../middleware/userAuth");
+const { compressImage, uploadUserAvatar } = require("../config/multerConfig");
 
 const storage = multer.diskStorage({
   destination: function (req, res, cb) {
@@ -43,6 +44,7 @@ router.post("/reset-password", resetPassword);
 router.post("/add-to-favorites", authenticateToken, addBookToFavorites);
 router.delete("/remove-from-favorites/:bookId", authenticateToken, removeBookFromFavorites);
 router.get("/get-favorites-books", authenticateToken, getFavouriteBook);
-router.patch("/", upload.single("avatar"), authenticateToken, updateData);
+// router.patch("/", upload.single("avatar"), authenticateToken, updateData);
+router.patch("/", uploadUserAvatar, authenticateToken, updateData);
 
 module.exports = router;
