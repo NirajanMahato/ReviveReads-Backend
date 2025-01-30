@@ -88,7 +88,7 @@ const bookStorage = multer.diskStorage({
 // Upload configurations
 const uploadUserAvatar = multer({
   storage: userStorage,
-  fileFilter: fileFilter,
+  // fileFilter: fileFilter,
   limits: {
     files: 1 // Single file only
   }

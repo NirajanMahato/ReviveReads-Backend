@@ -1,3 +1,4 @@
+const asyncHandler = require("../middleware/async");
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -17,7 +18,7 @@ const getAllUsers = async (req, res) => {
 // Sign-Up
 const signUp = async (req, res) => {
   try {
-    const { name, email, password, address } = req.body;
+    const { name, email, password, address, avatar } = req.body;
 
     //Check if email already exists
     const existingEmail = await User.findOne({ email: email });
@@ -34,13 +35,20 @@ const signUp = async (req, res) => {
     //Hash the password
     const hashedPass = await bcrypt.hash(password, 10);
 
-    const newUser = new User({
+    const userData = {
       name,
       email,
       password: hashedPass,
-      address,
-    });
+      address: address || null,
+      avatar
+    };
 
+    // If there's an avatar file (from Flutter), add it to userData
+    if (req.file) {
+      userData.avatar = req.file.filename;
+    }
+
+    const newUser = new User(userData);
     const data = await newUser.save();
 
     const transporter = nodemailer.createTransport({
@@ -68,6 +76,16 @@ const signUp = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error", error });
   }
 };
+
+const uploadImage = asyncHandler(async (req, res, next) => {
+  if (!req.file) {
+    return res.status(400).send({ message: "Please upload a file" });
+  }
+  res.status(200).json({
+    success: true,
+    data: req.file.filename,
+  });
+});
 
 // Sign-In
 const signIn = async (req, res) => {
@@ -364,6 +382,7 @@ const updateUserStatus = async (req, res) => {
 module.exports = {
   getAllUsers,
   signUp,
+  uploadImage,
   signIn,
   getUserById,
   deleteById,
