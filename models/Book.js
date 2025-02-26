@@ -50,7 +50,6 @@ const bookSchema = mongoose.Schema(
       default: "Pending", // By default, the book will be pending approval
     },
     approvalDate: {
-      // Optionally, you can track when declined
       type: Date,
       default: null,
     },
