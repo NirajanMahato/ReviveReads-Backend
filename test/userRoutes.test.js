@@ -4,13 +4,13 @@ const { expect } = chai;
 
 chai.use(chaiHttp);
 
-const BASE_URL = "http://localhost:5000"; // Ensure server is running on this port
+const BASE_URL = "http://localhost:5000";
 
 describe("User API Routes", () => {
   let token;
   let userId;
 
-  //   Step 1: User Signup (if not already registered)
+  // User Signup (if not already registered)
   it("should register a new user", (done) => {
     chai
       .request(BASE_URL)
@@ -29,7 +29,7 @@ describe("User API Routes", () => {
       });
   });
 
-  //   Step 2: Log in Before Running Protected Routes
+  // Log in Before Running Protected Routes
   beforeEach((done) => {
     chai
       .request(BASE_URL)
@@ -48,7 +48,7 @@ describe("User API Routes", () => {
       });
   });
 
-  //   Test: Get user by ID (after getting fresh token)
+  // Get user by ID (after getting fresh token)
   it("should fetch user details", (done) => {
     chai
       .request(BASE_URL)
@@ -62,7 +62,7 @@ describe("User API Routes", () => {
       });
   });
 
-  //   Test: Add a book to favorites
+  //  Add a book to favorites
   it("should add a book to favorites", (done) => {
     chai
       .request(BASE_URL)
@@ -77,7 +77,7 @@ describe("User API Routes", () => {
       });
   });
 
-  //   Test: Get favorite books
+  // Get favorite books
   it("should get favorite books", (done) => {
     chai
       .request(BASE_URL)
@@ -91,7 +91,7 @@ describe("User API Routes", () => {
       });
   });
 
-  //   Test: Remove a book from favorites
+  // Remove a book from favorites
   it("should remove a book from favorites", (done) => {
     chai
       .request(BASE_URL)

@@ -8,14 +8,14 @@ const BASE_URL = "http://localhost:5000";
 let token;
 
 describe("Notification API Routes", () => {
-  // Step 1: Log in before running tests to get a fresh token
+  // Log in before running tests to get a fresh token
   before((done) => {
     chai
       .request(BASE_URL)
       .post("/api/user/sign-in")
       .send({
-        email: "nirajanmahato@gmail.com", // Use a valid user email
-        password: "password123", // Ensure this matches your database credentials
+        email: "nirajanmahato@gmail.com",
+        password: "password123",
       })
       .end((err, res) => {
         console.log("Login Response:", res.body);

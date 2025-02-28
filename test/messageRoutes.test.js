@@ -4,69 +4,73 @@ const { expect } = chai;
 
 chai.use(chaiHttp);
 
-const BASE_URL = "http://localhost:5000"; // Update based on your server setup
-
+const BASE_URL = "http://localhost:5000";
+let token;
+let receiverId = "67beb758136c3c3514afae8a";
 describe("Message API Routes", () => {
-  let token;
-  let receiverId = "67beb758136c3c3514afae8a"; // Replace with a real user ID
-
-  //   Step 1: Log in to get a fresh token before running tests
+  // Log in before sending messages
   before((done) => {
     chai
       .request(BASE_URL)
       .post("/api/user/sign-in")
       .send({
-        email: "nirajanmahato@gmail.com",
+        email: "nirajanmahato@gmail.com", // Use a valid user
         password: "password123",
       })
       .end((err, res) => {
-        console.log("Login Response:", res.body);
+        console.log("Login Response:", res.status, res.body);
+        if (err) return done(err);
+
         expect(res).to.have.status(200);
         expect(res.body).to.have.property("user");
-        token = res.body.user.token; // Get new valid token
+        token = res.body.user.token;
         done();
       });
   });
 
-  //   Test: Send a message
+  // Send a message
   it("should send a message", (done) => {
     chai
       .request(BASE_URL)
       .post(`/api/messages/send/${receiverId}`)
       .set("Authorization", `Bearer ${token}`)
-      .send({
-        content: "Hello, how are you?",
-      })
+      .send({ message: "Hello, how are you?" }) // Match model field
       .end((err, res) => {
-        console.log("Send Message Response:", res.body); // Debugging output
+        console.log("Send Message Response:", res.status, res.body);
+        if (err) return done(err);
+
         expect(res).to.have.status(201);
         expect(res.body).to.have.property("success", true);
         done();
       });
   });
 
-  //   Test: Fetch messages between users
-  it("should fetch messages between users", (done) => {
+  //  Fetch messages
+  it("should fetch messages", (done) => {
     chai
       .request(BASE_URL)
       .get(`/api/messages/${receiverId}`)
       .set("Authorization", `Bearer ${token}`)
       .end((err, res) => {
-        console.log("Fetch Messages Response:", res.body); // Debugging output
+        console.log("Fetch Messages Response:", res.status, res.body);
+        if (err) return done(err);
+
         expect(res).to.have.status(200);
         expect(res.body).to.be.an("array");
         done();
       });
   });
 
-  //   Test: Get unread message count
+  //  Get unread message count
   it("should fetch unread message count", (done) => {
     chai
       .request(BASE_URL)
       .get("/api/messages/unread")
       .set("Authorization", `Bearer ${token}`)
       .end((err, res) => {
-        console.log("Unread Messages Response:", res.body); // Debugging output
+        console.log("Unread Messages Response:", res.status, res.body);
+        if (err) return done(err);
+
         expect(res).to.have.status(200);
         expect(res.body).to.have.property("unreadCount").that.is.a("number");
         done();
